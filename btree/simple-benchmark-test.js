@@ -8,8 +8,8 @@ import { DiskBPlusTree } from './simple.js';
 import { it, describe, after} from 'node:test'
 import fs from 'fs';
 
-const newTree = new DiskBPlusTree('./new-tree')
-const populatedNonCachedTree = new DiskBPlusTree('./non-cached-tree')
+const newTree = new DiskBPlusTree('./new-tree-simple')
+const populatedNonCachedTree = new DiskBPlusTree('./non-cached-tree-simple')
 
 function bench(fn){
   const before = Date.now();
@@ -47,6 +47,6 @@ describe('Simple Implementation', () => {
     }
   })
 
-  after(() => fs.rmSync('./new-tree'))
+  // after(() => fs.rmSync('./new-tree-simple'))
 })
 

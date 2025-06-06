@@ -8,8 +8,8 @@ import { DiskBPlusTree } from './page-cached.js';
 import { it, describe, after} from 'node:test'
 import fs from 'fs';
 
-const newTree = new DiskBPlusTree('./new-tree')
-const populatedNonCachedTree = new DiskBPlusTree('./non-cached-tree')
+const newTree = new DiskBPlusTree('./new-tree-paged')
+const populatedNonCachedTree = new DiskBPlusTree('./non-cached-tree-paged')
 
 function bench(fn){
   const before = Date.now();
@@ -26,7 +26,8 @@ const thresholds = {
   read: { duration: 2 }
 }
 
-describe('Simple Implementation', () => {
+//BROKEN ATM
+describe('Cached Implementation', () => {
   it(`should insert ${thresholds.insert.keys} under ${thresholds.insert.duration}ms`, (t) => {
     const indexes = [...Array(thresholds.insert.keys).keys()].map((i) => keysWithDifferentValues.has(i) ? valueToBeTested : MOCK_VALUES);
     const timeElapsed = bench(() => {
@@ -47,6 +48,6 @@ describe('Simple Implementation', () => {
     }
   })
 
-  after(() => fs.rmSync('./new-tree'))
+  // after(() => fs.rmSync('./new-tree-paged'))
 })
 

@@ -58,7 +58,7 @@ export class DiskBPlusTree {
       fs.writeSync(this.fd, buffer, 0, PAGE_SIZE, pageId * PAGE_SIZE);
       return console.log('fsync called')
     }
-    this.cache[pageId] = { _id: true, buffer }
+    this.cache[pageId] = { _d: true, buffer }
   }
 
   flush(){
@@ -71,11 +71,10 @@ export class DiskBPlusTree {
         this._writePage(pageId, buffer, true)
       }
     }
-
   }
 
   _readPage(pageId) {
-    if(this.cache.length >= pageId && this.cache[pageId]){
+    if(this.cache[pageId]){
       return this.cache[pageId].buffer;
     }
     const buffer = Buffer.allocUnsafe(PAGE_SIZE);

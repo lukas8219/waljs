@@ -1,0 +1,298 @@
+Statistical profiling result from isolate-0x128008000-9306-v8.log, (82 ticks, 9 unaccounted, 0 excluded).
+
+ [Shared libraries]:
+   ticks  total  nonlib   name
+     16   19.5%          /usr/lib/system/libsystem_c.dylib
+     15   18.3%          /usr/lib/system/libsystem_pthread.dylib
+      4    4.9%          /usr/lib/libc++.1.dylib
+      1    1.2%          /usr/lib/system/libsystem_malloc.dylib
+      1    1.2%          /usr/lib/system/libsystem_kernel.dylib
+
+ [JavaScript]:
+   ticks  total  nonlib   name
+
+ [C++]:
+   ticks  total  nonlib   name
+     21   25.6%   46.7%  T non-virtual thunk to node::http2::Http2Stream::ReadStop()
+      6    7.3%   13.3%  T _guarded_close_np
+      3    3.7%    6.7%  T _thread_info
+      2    2.4%    4.4%  t std::__1::basic_ostream<char, std::__1::char_traits<char>>& std::__1::__put_character_sequence[abi:un170006]<char, std::__1::char_traits<char>>(std::__1::basic_ostream<char, std::__1::char_traits<char>>&, char const*, unsigned long)
+      1    1.2%    2.2%  t std::__1::ostreambuf_iterator<char, std::__1::char_traits<char>> std::__1::__pad_and_output[abi:un170006]<char, std::__1::char_traits<char>>(std::__1::ostreambuf_iterator<char, std::__1::char_traits<char>>, char const*, char const*, char const*, std::__1::ios_base&, char)
+      1    1.2%    2.2%  t node::StaticExternalByteResource<unsigned short, unsigned short, v8::String::ExternalStringResource>::data() const
+      1    1.2%    2.2%  T _task_restartable_ranges_register
+      1    1.2%    2.2%  T __os_semaphore_create
+
+ [Summary]:
+   ticks  total  nonlib   name
+      0    0.0%    0.0%  JavaScript
+     36   43.9%   80.0%  C++
+      1    1.2%    2.2%  GC
+     37   45.1%          Shared libraries
+      9   11.0%          Unaccounted
+
+ [C++ entry points]:
+   ticks    cpp   total   name
+     16   50.0%   19.5%  T non-virtual thunk to node::http2::Http2Stream::ReadStop()
+      4   12.5%    4.9%  T _guarded_close_np
+      3    9.4%    3.7%  t _Builtins_ArrayMap
+      2    6.3%    2.4%  t std::__1::basic_ostream<char, std::__1::char_traits<char>>& std::__1::__put_character_sequence[abi:un170006]<char, std::__1::char_traits<char>>(std::__1::basic_ostream<char, std::__1::char_traits<char>>&, char const*, unsigned long)
+      2    6.3%    2.4%  t _Builtins_PromiseConstructor
+      1    3.1%    1.2%  t std::__1::ostreambuf_iterator<char, std::__1::char_traits<char>> std::__1::__pad_and_output[abi:un170006]<char, std::__1::char_traits<char>>(std::__1::ostreambuf_iterator<char, std::__1::char_traits<char>>, char const*, char const*, char const*, std::__1::ios_base&, char)
+      1    3.1%    1.2%  t node::StaticExternalByteResource<unsigned short, unsigned short, v8::String::ExternalStringResource>::data() const
+      1    3.1%    1.2%  t _Builtins_CEntry_Return1_ArgvOnStack_NoBuiltinExit
+      1    3.1%    1.2%  T _task_restartable_ranges_register
+      1    3.1%    1.2%  T __os_semaphore_create
+
+ [Bottom up (heavy) profile]:
+  Note: percentage shows a share of a particular caller in the total
+  amount of its parent calls.
+  Callers occupying less than 1.0% are not shown.
+
+   ticks parent  name
+     21   25.6%  T non-virtual thunk to node::http2::Http2Stream::ReadStop()
+      5   23.8%    JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      5  100.0%      JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      2   40.0%        JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      2  100.0%          JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1   20.0%        JS: ~<anonymous> node:internal/worker:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1   20.0%        JS: ~<anonymous> node:internal/test_runner/test:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1   20.0%        JS: ~<anonymous> node:fs/promises:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      3   14.3%    JS: ~WriteStream node:tty:88:21
+      2   66.7%      JS: ~refresh node:internal/util/colors:26:10
+      2  100.0%        JS: ~<anonymous> node:internal/util/colors:1:1
+      2  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      2  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1   33.3%      JS: ~<anonymous> node:internal/test_runner/utils:1:1
+      1  100.0%        JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%          JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1  100.0%            JS: ~<anonymous> node:internal/test_runner/test:1:1
+      2    9.5%    JS: ~getCheckedFunction node:os:62:28
+      2  100.0%      JS: ~<anonymous> node:os:1:1
+      2  100.0%        JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      2  100.0%          JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      2  100.0%            JS: ~<anonymous> node:internal/test_runner/test:1:1
+      1    4.8%    JS: ~normalizeSpawnArguments node:child_process:538:33
+      1  100.0%      JS: ~spawn node:child_process:745:15
+      1  100.0%        JS: ~<anonymous> node:internal/test_runner/runner:365:73
+      1  100.0%          JS: ~run node:internal/test_runner/test:984:12
+      1  100.0%            JS: ~start node:internal/test_runner/test:920:8
+      1    4.8%    JS: ~Test node:internal/test_runner/test:501:14
+      1  100.0%      JS: ~createTestTree node:internal/test_runner/harness:37:24
+      1  100.0%        JS: ~run node:internal/test_runner/runner:538:13
+      1  100.0%          JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1    4.8%    JS: ~<anonymous> node:net:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%        JS: ~<anonymous> node:child_process:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%            JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1    4.8%    JS: ~<anonymous> node:internal/streams/pipeline:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/streams/compose:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/streams/operators:1:1
+      1  100.0%          JS: ~<anonymous> node:stream:1:1
+      1  100.0%            JS: ~<anonymous> node:net:1:1
+      1    4.8%    JS: ~<anonymous> node:child_process:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1    4.8%    JS: ~#processRawBuffer node:internal/test_runner/runner:302:20
+      1  100.0%      JS: ~parseMessage node:internal/test_runner/runner:272:15
+      1  100.0%        JS: ~<anonymous> node:internal/test_runner/runner:399:29
+      1  100.0%          JS: ^emit node:events:454:44
+      1  100.0%            JS: ~addChunk node:internal/streams/readable:548:18
+
+     16   19.5%  /usr/lib/system/libsystem_c.dylib
+      7   43.8%    JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      7  100.0%      JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      2   28.6%        JS: ~lazyMinimatch node:internal/fs/glob:43:23
+      2  100.0%          JS: ~createMatcher node:internal/fs/glob:98:23
+      2  100.0%            JS: ~<anonymous> node:internal/fs/glob:297:49
+      2   28.6%        JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      2  100.0%          JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1   14.3%        JS: ~<anonymous> node:worker_threads:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1   14.3%        JS: ~<anonymous> node:internal/test_runner/mock/mock:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1   14.3%        JS: ~<anonymous> node:assert:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      2   12.5%    JS: ~addChunk node:internal/streams/readable:548:18
+      2  100.0%      JS: ~readableAddChunkPushObjectMode node:internal/streams/readable:514:40
+      2  100.0%        JS: ~Readable.push node:internal/streams/readable:385:35
+      2  100.0%          JS: ~#tryPush node:internal/test_runner/tests_stream:158:11
+      2  100.0%            JS: ~<anonymous> node:internal/test_runner/tests_stream:151:17
+      1    6.3%    JS: ~<anonymous> node:internal/test_runner/runner:727:57
+      1  100.0%      t _Builtins_PromiseConstructor
+      1  100.0%        JS: ~runFiles node:internal/test_runner/runner:724:16
+      1  100.0%          JS: ~runChain node:internal/test_runner/runner:803:20
+      1  100.0%            t _Builtins_AsyncFunctionAwaitResolveClosure
+      1    6.3%    JS: ~<anonymous> node:internal/streams/operators:1:1
+      1  100.0%      JS: ~<anonymous> node:stream:1:1
+      1  100.0%        JS: ~<anonymous> node:net:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%            JS: ~<anonymous> node:child_process:1:1
+      1    6.3%    JS: ~<anonymous> node:internal/streams/duplex:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/streams/pipeline:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/streams/compose:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/streams/operators:1:1
+      1  100.0%            JS: ~<anonymous> node:stream:1:1
+      1    6.3%    JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%      JS: ~<anonymous> node:child_process:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1    6.3%    JS: ~<anonymous> node:child_process:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/main/test_runner:1:1
+
+     15   18.3%  /usr/lib/system/libsystem_pthread.dylib
+      3   20.0%    JS: ~<anonymous> node:internal/main/test_runner:1:1
+      3   20.0%    JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      3  100.0%      JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1   33.3%        JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1   33.3%        JS: ~<anonymous> node:internal/test_runner/harness:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1   33.3%        JS: ~<anonymous> node:internal/fs/promises:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1    6.7%    t _Builtins_PromiseConstructor
+      1  100.0%      JS: ~getReportersMap node:internal/test_runner/utils:148:31
+      1  100.0%        JS: ~<anonymous> node:internal/test_runner/utils:306:36
+      1  100.0%          JS: ~runChain node:internal/test_runner/runner:803:20
+      1  100.0%            JS: ~run node:internal/test_runner/runner:538:13
+      1    6.7%    JS: ~_destroy node:internal/streams/destroy:90:18
+      1  100.0%      JS: ~destroy node:internal/streams/destroy:49:17
+      1  100.0%        JS: ~Writable.destroy node:internal/streams/writable:1112:38
+      1  100.0%          JS: ~finish node:internal/streams/writable:947:16
+      1  100.0%            JS: ^processTicksAndRejections node:internal/process/task_queues:72:35
+      1    6.7%    JS: ~<anonymous> node:net:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%        JS: ~<anonymous> node:child_process:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%            JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1    6.7%    JS: ~<anonymous> node:internal/streams/operators:1:1
+      1  100.0%      JS: ~<anonymous> node:stream:1:1
+      1  100.0%        JS: ~<anonymous> node:net:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%            JS: ~<anonymous> node:child_process:1:1
+      1    6.7%    JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%      JS: ~<anonymous> node:child_process:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1    6.7%    JS: ~<anonymous> node:dgram:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%        JS: ~<anonymous> node:child_process:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%            JS: ~<anonymous> node:internal/main/test_runner:1:1
+
+      9   11.0%  UNKNOWN
+      3   33.3%    JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      3  100.0%      JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      2   66.7%        JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      2  100.0%          JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1   33.3%        JS: ~<anonymous> node:internal/test_runner/mock/mock:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1   11.1%    JS: ~getCheckedFunction node:os:62:28
+      1  100.0%      JS: ~<anonymous> node:os:1:1
+      1  100.0%        JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%          JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1  100.0%            JS: ~<anonymous> node:internal/test_runner/test:1:1
+      1   11.1%    JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1   11.1%    JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1   11.1%    JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%      JS: ~<anonymous> node:child_process:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1   11.1%    JS: ~#handleReportItem node:internal/test_runner/runner:206:20
+      1  100.0%      JS: ~addToReport node:internal/test_runner/runner:250:14
+      1  100.0%        JS: ~#processRawBuffer node:internal/test_runner/runner:302:20
+      1  100.0%          JS: ~parseMessage node:internal/test_runner/runner:272:15
+      1  100.0%            JS: ~<anonymous> node:internal/test_runner/runner:399:29
+
+      6    7.3%  T _guarded_close_np
+      1   16.7%    JS: ~finalize node:internal/test_runner/test:1248:11
+      1  100.0%      JS: ~processReadySubtestRange node:internal/test_runner/test:753:27
+      1  100.0%        JS: ~postRun node:internal/test_runner/test:1130:10
+      1  100.0%          JS: ~run node:internal/test_runner/test:984:12
+      1  100.0%            t _Builtins_AsyncFunctionAwaitResolveClosure
+      1   16.7%    JS: ~<anonymous> node:stream:1:1
+      1  100.0%      JS: ~<anonymous> node:net:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%          JS: ~<anonymous> node:child_process:1:1
+      1  100.0%            JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1   16.7%    JS: ~<anonymous> node:internal/test_runner/runner:365:73
+      1  100.0%      JS: ~run node:internal/test_runner/test:984:12
+      1  100.0%        JS: ~start node:internal/test_runner/test:920:8
+      1  100.0%          JS: ~runTestFile node:internal/test_runner/runner:361:21
+      1  100.0%            JS: ~<anonymous> node:internal/test_runner/runner:727:57
+      1   16.7%    JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%      JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+      1  100.0%        JS: ~<anonymous> node:internal/assert/assertion_error:1:1
+      1  100.0%          JS: ^compileForInternalLoader node:internal/bootstrap/realm:388:27
+      1  100.0%            JS: ^requireBuiltin node:internal/bootstrap/realm:425:24
+
+      4    4.9%  /usr/lib/libc++.1.dylib
+      1   25.0%    JS: ~compose node:internal/streams/compose:28:34
+      1  100.0%      JS: ~<anonymous> node:internal/test_runner/utils:306:36
+      1  100.0%        t _Builtins_AsyncFunctionAwaitResolveClosure
+      1   25.0%    JS: ~<anonymous> node:dgram:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/child_process:1:1
+      1  100.0%        JS: ~<anonymous> node:child_process:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/test_runner/runner:1:1
+      1  100.0%            JS: ~<anonymous> node:internal/main/test_runner:1:1
+      1   25.0%    JS: ^#parseAST node:internal/deps/minimatch/index:519:23
+      1  100.0%      JS: ~fromGlob node:internal/deps/minimatch/index:623:22
+      1  100.0%        JS: ~parse node:internal/deps/minimatch/index:1461:8
+      1  100.0%          JS: ~<anonymous> node:internal/deps/minimatch/index:1101:20
+      1  100.0%            t _Builtins_ArrayMap
+
+      3    3.7%  T _thread_info
+
+      2    2.4%  t std::__1::basic_ostream<char, std::__1::char_traits<char>>& std::__1::__put_character_sequence[abi:un170006]<char, std::__1::char_traits<char>>(std::__1::basic_ostream<char, std::__1::char_traits<char>>&, char const*, unsigned long)
+      1   50.0%    JS: ~<anonymous> node:internal/streams/readable:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/streams/duplex:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/streams/pipeline:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/streams/compose:1:1
+      1  100.0%            JS: ~<anonymous> node:internal/streams/operators:1:1
+      1   50.0%    JS: ~<anonymous> node:internal/main/test_runner:1:1
+
+      1    1.2%  t std::__1::ostreambuf_iterator<char, std::__1::char_traits<char>> std::__1::__pad_and_output[abi:un170006]<char, std::__1::char_traits<char>>(std::__1::ostreambuf_iterator<char, std::__1::char_traits<char>>, char const*, char const*, char const*, std::__1::ios_base&, char)
+      1  100.0%    JS: ~<anonymous> node:internal/streams/duplex:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/streams/pipeline:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/streams/compose:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/streams/operators:1:1
+      1  100.0%            JS: ~<anonymous> node:stream:1:1
+
+      1    1.2%  t node::StaticExternalByteResource<unsigned short, unsigned short, v8::String::ExternalStringResource>::data() const
+      1  100.0%    JS: ~setupProcessState node:internal/test_runner/harness:188:27
+      1  100.0%      JS: ~createTestTree node:internal/test_runner/harness:37:24
+      1  100.0%        JS: ~run node:internal/test_runner/runner:538:13
+      1  100.0%          JS: ~<anonymous> node:internal/main/test_runner:1:1
+
+      1    1.2%  T _task_restartable_ranges_register
+      1  100.0%    JS: ~<anonymous> node:internal/streams/duplex:1:1
+      1  100.0%      JS: ~<anonymous> node:internal/streams/pipeline:1:1
+      1  100.0%        JS: ~<anonymous> node:internal/streams/compose:1:1
+      1  100.0%          JS: ~<anonymous> node:internal/streams/operators:1:1
+      1  100.0%            JS: ~<anonymous> node:stream:1:1
+
+      1    1.2%  T __os_semaphore_create
+
+      1    1.2%  /usr/lib/system/libsystem_malloc.dylib
+      1  100.0%    JS: ^get node:internal/streams/writable:228:8
+      1  100.0%      t _Builtins_CEntry_Return1_ArgvOnStack_NoBuiltinExit
+      1  100.0%        JS: ^get node:internal/streams/writable:1008:8
+      1  100.0%          JS: ~endReadableNT node:internal/streams/readable:1690:23
+      1  100.0%            JS: ^processTicksAndRejections node:internal/process/task_queues:72:35
+
+      1    1.2%  /usr/lib/system/libsystem_kernel.dylib
+

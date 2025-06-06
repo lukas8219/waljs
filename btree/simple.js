@@ -1,38 +1,58 @@
 import fs from 'fs';
 
-const PAGE_SIZE = 124;
-const MAX_KEYS = 4; // for easier testing, adjust as needed
+/*
+ * Why I think 4bytes pages are much faster than 4Kb in this case
+ This implementation has no page caching at all between User X Kernel Space
+ By using a lower page size, the syscall to malloc returns much quicker - which trades off CPU for speed.
+ In a real scenario, the buffer size is mostly bouded to Disk IO so 4kb~8kb should enough to optimize for hardware
+ My guess is - whenever I add Page Caching into this implementation the performance should increase significantly.
+
+
+ EDIT: The MAX_KEYS was too low (lol) thus we were doing much more malloc than needed
+*/
+const PAGE_SIZE = 1024 * 4; 
+const MAX_KEYS = 508; // for easier testing, adjust as needed
 const HEADER_PAGE = 0;
 
 export class DiskBPlusTree {
   constructor(path) {
     this.path = path;
-    this.fd = fs.openSync(path, 'w+');
-    this.rootPage = 1;
-    this.pageCount = 2;
-    this._initHeader();
-
-    // Create an initial empty leaf node
-    const buf = this._encodeLeaf([], []);
-    this._writePage(this.rootPage, buf);
+    const exists = fs.existsSync(path);
+    this.fd = fs.openSync(path, fs.constants.O_RDWR | fs.constants.O_CREAT);
+    if(!exists){
+      this.rootPage = 1;
+      this.pageCount = 2;
+      this._initHeader();
+      const buf = this._encodeLeaf([], []);
+      this._writePage(this.rootPage, buf);
+    } else {
+      this._readHeaderMetadata()
+    }
   }
 
   _initHeader() {
-    const header = Buffer.alloc(PAGE_SIZE);
+    const header = Buffer.allocUnsafe(PAGE_SIZE);
     header.writeUInt32LE(this.rootPage, 0);   // root page
     header.writeUInt32LE(this.pageCount, 4);  // page count
     this._writePage(HEADER_PAGE, header);
   }
 
   _updateHeader() {
-    const header = Buffer.alloc(PAGE_SIZE);
+    const header = Buffer.allocUnsafe(PAGE_SIZE);
     header.writeUInt32LE(this.rootPage, 0);
     header.writeUInt32LE(this.pageCount, 4);
     this._writePage(HEADER_PAGE, header);
   }
 
+  _readHeaderMetadata(){
+    const headers = Buffer.allocUnsafe(2 * PAGE_SIZE);
+    fs.readSync(this.fd, headers, 0, 4)
+    fs.readSync(this.fd, headers, 4, 4)
+    this.rootPage = headers.readUInt32LE(0, 4)
+    this.pageCount = headers.readUInt32LE(4, 4)
+  }
+
   _allocatePage() {
-    console.log('new page allocated')
     return this.pageCount++;
   }
 
@@ -41,13 +61,13 @@ export class DiskBPlusTree {
   }
 
   _readPage(pageId) {
-    const buffer = Buffer.alloc(PAGE_SIZE);
+    const buffer = Buffer.allocUnsafe(PAGE_SIZE);
     fs.readSync(this.fd, buffer, 0, PAGE_SIZE, pageId * PAGE_SIZE);
     return buffer;
   }
 
   _encodeLeaf(keys, values, nextLeaf = 0) {
-    const buf = Buffer.alloc(PAGE_SIZE);
+    const buf = Buffer.allocUnsafe(PAGE_SIZE);
     buf.writeUInt8(1, 0); // isLeaf = 1
     buf.writeUInt16LE(keys.length, 1);
     buf.writeUInt32LE(nextLeaf, 3); // 4 bytes for next leaf pointer
@@ -72,7 +92,7 @@ export class DiskBPlusTree {
   }
 
   _encodeInternal(keys, children) {
-    const buf = Buffer.alloc(PAGE_SIZE);
+    const buf = Buffer.allocUnsafe(PAGE_SIZE);
     buf.writeUInt8(0, 0); // isLeaf = 0
     buf.writeUInt16LE(keys.length, 1);
     for (let i = 0; i < keys.length; i++) {
@@ -109,6 +129,9 @@ export class DiskBPlusTree {
     }
   }
 
+  /*
+  Only returns something if there was any Node split
+   */
   _insertRecursive(pageId, key, value) {
     const buffer = this._readPage(pageId);
     const isLeaf = buffer.readUInt8(0);

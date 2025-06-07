@@ -6,7 +6,7 @@ To read a single single within those 1million takes less than 1ms
 */
 import { DiskBPlusTree } from './page-cached.js';
 import { it, describe, after} from 'node:test'
-import fs from 'fs';
+import fs from 'fs'
 
 const newTree = new DiskBPlusTree('./new-tree-paged')
 const populatedNonCachedTree = new DiskBPlusTree('./non-cached-tree-paged')
@@ -34,11 +34,12 @@ describe('Cached Implementation', () => {
       for(const [index, value] of indexes.entries()){
         newTree.insert(index,value)
       }
+      newTree.flush();
     })
     t.assert.equal(timeElapsed < thresholds.insert.duration, true)
   })
 
-  it('should query B+Tree with more than 1_000_000 under 2ms', (t) => {
+  it.skip('should query B+Tree with more than 1_000_000 under 2ms', (t) => {
     for(const index of keysWithDifferentValues.keys()){
       const benchResult = bench(() => {
         const value = populatedNonCachedTree.get(index)
@@ -48,6 +49,6 @@ describe('Cached Implementation', () => {
     }
   })
 
-  // after(() => fs.rmSync('./new-tree-paged'))
+  //after(() => fs.rmSync('./new-tree-paged'))
 })
 

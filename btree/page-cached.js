@@ -13,7 +13,6 @@ export class DiskBPlusTree {
   constructor(path) {
     this.path = path;
     this.cache = []
-    this.lastFlush = -Infinity;
     const exists = fs.existsSync(path);
     this.fd = fs.openSync(path, fs.constants.O_RDWR | fs.constants.O_CREAT);
     if(!exists){
@@ -56,17 +55,17 @@ export class DiskBPlusTree {
   _writePage(pageId, buffer, force=false) {
     if(force){
       fs.writeSync(this.fd, buffer, 0, PAGE_SIZE, pageId * PAGE_SIZE);
-      return console.log('fsync called')
+      return;
     }
     this.cache[pageId] = { _d: true, buffer }
   }
 
   flush(){
-    const entries = this.cache.entries();
-    if(!entries.size){
-      return console.log('nothing to flush');
+    if(!this.cache.length){
+      return console.log('nothing to flush', this.cache);
     }
-    for(const [pageId,{ _d, buffer}] of entries){
+    for(const pageId in this.cache){
+      const { _d, buffer } = this.cache[pageId] || {}
       if(_d){
         this._writePage(pageId, buffer, true)
       }
@@ -193,7 +192,7 @@ export class DiskBPlusTree {
       const result = this._insertRecursive(childPage, key, value);
       if (!result) return null;
 
-      const { promotedKey, left, right } = result;
+      const { promotedKey, right } = result;
       nodeKeys.splice(i, 0, promotedKey);
       children.splice(i + 1, 0, right);
 

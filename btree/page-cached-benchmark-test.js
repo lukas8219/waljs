@@ -1,11 +1,11 @@
 /*
  * Benchmarks to test the simplesmente BTree implementation using pure, raw sync syscalls read/write.
 Pay attention into how fast the reads (cached from OS) is versus manually doing `write/sync`
-To write the 1_000_000 keys it takes us 10s
+To write the 1_000_000 keys it takes us 10s (0.000006 seconds per insert)
 To read a single single within those 1million takes less than 1ms
 */
 import { DiskBPlusTree } from './page-cached.js';
-import { it, describe, after} from 'node:test'
+import { it, describe, after } from 'node:test'
 import fs from 'fs'
 
 const newTree = new DiskBPlusTree('./new-tree-paged')
@@ -26,7 +26,6 @@ const thresholds = {
   read: { duration: 2 }
 }
 
-//BROKEN ATM
 describe('Cached Implementation', () => {
   it(`should insert ${thresholds.insert.keys} under ${thresholds.insert.duration}ms`, (t) => {
     const indexes = [...Array(thresholds.insert.keys).keys()].map((i) => keysWithDifferentValues.has(i) ? valueToBeTested : MOCK_VALUES);
@@ -39,7 +38,7 @@ describe('Cached Implementation', () => {
     t.assert.equal(timeElapsed < thresholds.insert.duration, true)
   })
 
-  it.skip('should query B+Tree with more than 1_000_000 under 2ms', (t) => {
+  it('should query B+Tree with more than 1_000_000 under 2ms', { timeout: 2000 }, (t) => {
     for(const index of keysWithDifferentValues.keys()){
       const benchResult = bench(() => {
         const value = populatedNonCachedTree.get(index)
@@ -49,6 +48,6 @@ describe('Cached Implementation', () => {
     }
   })
 
-  //after(() => fs.rmSync('./new-tree-paged'))
+  after(() => fs.rmSync('./new-tree-paged'))
 })
 

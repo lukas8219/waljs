@@ -47,6 +47,6 @@ describe('Simple Implementation', () => {
     }
   })
 
-  // after(() => fs.rmSync('./new-tree-simple'))
+  after(() => fs.rmSync('./new-tree-simple'))
 })
 

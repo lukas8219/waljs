@@ -12,3 +12,8 @@ Maybe I'll change the implementation to variable size of KV and dynamic types in
 
 ### Parser and Query Languange
 Implementation of an Parser for writing queries
+
+## Tests
+```bash
+node --test
+```

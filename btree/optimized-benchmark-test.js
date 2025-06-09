@@ -10,7 +10,6 @@ import fs from 'fs'
 
 const name = 'optimized-bench'
 const newTree = new DiskBPlusTree(name)
-const populatedNonCachedTree = new DiskBPlusTree(name);
 
 function bench(fn){
   const before = Date.now();
@@ -42,13 +41,14 @@ describe('Cached Implementation', () => {
   it('should query B+Tree with more than 1_000_000 under 2ms', { timeout: 2000 }, (t) => {
     for(const index of keysWithDifferentValues.keys()){
       const benchResult = bench(() => {
-        const value = populatedNonCachedTree.get(index)
-        t.assert.equal(value, valueToBeTested);
+        const value = newTree.get(index)
+        t.assert.equal(value, valueToBeTested),`${value} is not equal to ${valueToBeTested}`;
       });
       t.assert.equal(benchResult < thresholds.read.duration, true)
     }
   })
 
   after(() => fs.rmSync(name))
+
 })
 

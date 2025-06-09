@@ -154,7 +154,7 @@ export class DiskBPlusTree {
 
     if (isLeaf) {
       let { keys, values, nextLeaf } = this._decodeLeaf(buffer);
-      let idx = keys.findIndex(k => key < k);
+      let idx = this._binarySearch(keys, key, keys.length);
       if (idx === -1) idx = keys.length;
       keys.splice(idx, 0, key);
       values.splice(idx, 0, value);
@@ -185,8 +185,8 @@ export class DiskBPlusTree {
       }
     } else {
       const { keys: nodeKeys, children } = this._decodeInternal(buffer);
-      let i = 0;
-      while (i < nodeKeys.length && key >= nodeKeys[i]) i++;
+      let i = this._binarySearch(nodeKeys, key, nodeKeys.length);
+//      while (i < nodeKeys.length && key >= nodeKeys[i]) i++;
       const childPage = children[i];
 
       const result = this._insertRecursive(childPage, key, value);
@@ -246,5 +246,15 @@ export class DiskBPlusTree {
 
   close() {
     fs.closeSync(this.fd);
+  }
+
+  _binarySearch(arr, key, len) {
+    let lo = 0, hi = len;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (arr[mid] < key) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
   }
 }

@@ -7,7 +7,7 @@ const keysWithDifferentValues = new Set([1, 1000, 5000, 120_000, 333_333, 500_00
 const MOCK_VALUES = 4294967295;
 const valueToBeTested = 999;
 
-const indexes = [...Array(thresholds.insert.keys).keys()].map((i) => keysWithDifferentValues.has(i) ? valueToBeTested : MOCK_VALUES);
+const indexes = [...Array(1_000_000).keys()].map((i) => keysWithDifferentValues.has(i) ? valueToBeTested : MOCK_VALUES);
 for(const [index, value] of indexes.entries()){
   newTree.insert(index,value)
 }

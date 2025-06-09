@@ -92,12 +92,10 @@ export class DiskBPlusTree {
     const valuesOffset = 4;
     const keysOffset = valuesOffset + MAX_KEYS;
 
-    for (let i = 0; i < keys.length; i++) {
-      leaf[valuesOffset + i] = values[i];
-      leaf[keysOffset + i] = keys[i];
-    }
+    leaf.set(values, valuesOffset)
+    leaf.set(keys, keysOffset)
 
-    return Buffer.from(leaf.buffer, 0, PAGE_SIZE)
+    return Buffer.from(leaf.buffer, 0, PAGE_SIZE);
   }
 
   _decodeLeaf(buffer) {
@@ -147,10 +145,9 @@ export class DiskBPlusTree {
     const keysOffset = 3; //might be 3?
     const childrenOffset = keysOffset + MAX_KEYS;
 
-    for (let i = 0; i < keys.length; i++) {
-      internalNode[keysOffset + i] = keys[i]
-      internalNode[childrenOffset + i] = children[i]
-    }
+    internalNode.set(keys, keysOffset)
+    internalNode.set(children, childrenOffset)
+
     return Buffer.from(internalNode.buffer, 0, PAGE_SIZE);
   }
 

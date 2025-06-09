@@ -1,4 +1,5 @@
 import { DiskBPlusTree } from './optimized.js';
+import fs from 'fs'
 
 const name = 'optimized';
 const newTree = new DiskBPlusTree(name)
@@ -12,3 +13,6 @@ for(const [index, value] of indexes.entries()){
   newTree.insert(index,value)
 }
 newTree.flush();
+const stats = fs.statSync(name);
+console.log(stats);
+fs.rmSync(name);

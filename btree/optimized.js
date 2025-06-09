@@ -126,13 +126,13 @@ export class DiskBPlusTree {
     const childrenOffset = keysOffset + MAX_KEYS;
 
     const keys = new Array(numKeys);
-    const children = new Array(numKeys + 1); // ✅ CORRIGIDO
+    const children = new Array(numKeys + 1);
 
     for (let i = 0; i < numKeys; i++) {
       keys[i] = internal[keysOffset + i];
       children[i] = internal[childrenOffset + i];
     }
-    // ✅ PEGAR o último filho extra
+
     children[numKeys] = internal[childrenOffset + numKeys];
 
     return { keys, children };

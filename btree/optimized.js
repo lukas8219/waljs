@@ -83,27 +83,40 @@ export class DiskBPlusTree {
   }
 
   _encodeLeaf(keys, values, nextLeaf = 0) {
-    const buf = Buffer.allocUnsafe(PAGE_SIZE);
-    buf.writeUInt8(1, 0); // isLeaf = 1
-    buf.writeUInt16LE(keys.length, 1);
-    buf.writeUInt32LE(nextLeaf, 3); // 4 bytes for next leaf pointer
+    const leaf = new Uint32Array(PAGE_SIZE / 4);
+
+    leaf[0] = 1;                // isLeaf (equivalente ao buf.writeUInt8)
+    leaf[1] = keys.length;      // key count (equivalente ao buf.writeUInt16LE)
+    leaf[3] = nextLeaf;         // skip [2] to preserve offset = 3
+
+    const valuesOffset = 4;
+    const keysOffset = valuesOffset + MAX_KEYS;
 
     for (let i = 0; i < keys.length; i++) {
-      buf.writeUInt32LE(keys[i], 7 + i * 4);
-      buf.writeUInt32LE(values[i], 7 + MAX_KEYS * 4 + i * 4);
+      leaf[valuesOffset + i] = values[i];
+      leaf[keysOffset + i] = keys[i];
     }
-    return buf;
+
+    return Buffer.from(leaf.buffer, 0, PAGE_SIZE)
   }
 
   _decodeLeaf(buffer) {
-    const numKeys = buffer.readUInt16LE(1);
-    const nextLeaf = buffer.readUInt32LE(3);
-    const keys = [];
-    const values = [];
+    const view = new Uint32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / 4);
+
+    const numKeys = view[1];
+    const nextLeaf = view[3];
+
+    const valuesOffset = 4;
+    const keysOffset = valuesOffset + MAX_KEYS;
+
+    const keys = new Array(numKeys);
+    const values = new Array(numKeys);
+
     for (let i = 0; i < numKeys; i++) {
-      keys.push(buffer.readUInt32LE(7 + i * 4));
-      values.push(buffer.readUInt32LE(7 + MAX_KEYS * 4 + i * 4));
+      values[i] = view[valuesOffset + i];
+      keys[i] = view[keysOffset + i];
     }
+
     return { keys, values, nextLeaf };
   }
 
@@ -186,7 +199,7 @@ export class DiskBPlusTree {
     } else {
       const { keys: nodeKeys, children } = this._decodeInternal(buffer);
       let i = this._binarySearch(nodeKeys, key, nodeKeys.length);
-//      while (i < nodeKeys.length && key >= nodeKeys[i]) i++;
+      // while (i < nodeKeys.length && key >= nodeKeys[i]) i++;
       const childPage = children[i];
 
       const result = this._insertRecursive(childPage, key, value);

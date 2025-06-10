@@ -26,7 +26,7 @@ const thresholds = {
   read: { duration: 2 }
 }
 
-describe('Cached Implementation', () => {
+describe('Optimized Implementation', () => {
   it(`should insert ${thresholds.insert.keys} under ${thresholds.insert.duration}ms`, (t) => {
     const indexes = [...Array(thresholds.insert.keys).keys()].map((i) => keysWithDifferentValues.has(i) ? valueToBeTested : MOCK_VALUES);
     const timeElapsed = bench(() => {

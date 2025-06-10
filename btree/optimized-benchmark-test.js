@@ -22,7 +22,7 @@ const MOCK_VALUES = 4294967295;
 const valueToBeTested = 999;
 
 const thresholds = {
-  insert: { duration: 15_000, keys: 1_000_000 },
+  insert: { duration: 5_000, keys: 1_000_000 },
   read: { duration: 2 }
 }
 

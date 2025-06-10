@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "docker run --rm --cpus=\"1.0\" --cpuset-cpus=\"0\" -v \"$PWD:/app\" -w /app node:22-alpine node --test"
+    "test": "node --test",
+    "benchmark": "time node btree/profile.js"
   },
   "keywords": [],
   "author": "",

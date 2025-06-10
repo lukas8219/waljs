@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "node --test"
+    "test": "docker run --rm --cpus=\"1.0\" --cpuset-cpus=\"0\" -v \"$PWD:/app\" -w /app node:22-alpine node --test"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +12,8 @@
   "description": "",
   "devDependencies": {
     "@types/node": "^22.15.30"
+  },
+  "dependencies": {
+    "cpulimit": "^1.1.4"
   }
 }

@@ -4,12 +4,12 @@ Pay attention into how fast the reads (cached from OS) is versus manually doing 
 To write the 1_000_000 keys it takes us 10s (0.000006 seconds per insert)
 To read a single single within those 1million takes less than 1ms
 */
-import { DiskBPlusTree } from './page-cached.js';
+import { DiskBPlusTree } from './optimized.js';
 import { it, describe, after } from 'node:test'
 import fs from 'fs'
 
-const newTree = new DiskBPlusTree('./new-tree-paged')
-const populatedNonCachedTree = new DiskBPlusTree('./non-cached-tree-paged')
+const name = 'optimized-bench'
+const newTree = new DiskBPlusTree(name)
 
 function bench(fn){
   const before = Date.now();
@@ -22,11 +22,11 @@ const MOCK_VALUES = 4294967295;
 const valueToBeTested = 999;
 
 const thresholds = {
-  insert: { duration: 10_000, keys: 1_000_000 },
+  insert: { duration: 5_000, keys: 1_000_000 },
   read: { duration: 2 }
 }
 
-describe('Cached Implementation', () => {
+describe('Optimized Implementation', () => {
   it(`should insert ${thresholds.insert.keys} under ${thresholds.insert.duration}ms`, (t) => {
     const indexes = [...Array(thresholds.insert.keys).keys()].map((i) => keysWithDifferentValues.has(i) ? valueToBeTested : MOCK_VALUES);
     const timeElapsed = bench(() => {
@@ -41,13 +41,14 @@ describe('Cached Implementation', () => {
   it('should query B+Tree with more than 1_000_000 under 2ms', { timeout: 2000 }, (t) => {
     for(const index of keysWithDifferentValues.keys()){
       const benchResult = bench(() => {
-        const value = populatedNonCachedTree.get(index)
-        t.assert.equal(value, valueToBeTested);
+        const value = newTree.get(index)
+        t.assert.equal(value, valueToBeTested),`${value} is not equal to ${valueToBeTested}`;
       });
       t.assert.equal(benchResult < thresholds.read.duration, true)
     }
   })
 
-  after(() => fs.rmSync('./new-tree-paged'))
+  after(() => fs.rmSync(name))
+
 })
 

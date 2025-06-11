@@ -82,55 +82,74 @@ export class DiskBPlusTree {
     return buffer;
   }
 
-  _encodeLeaf(keys, values, nextLeaf = 0) {
-    const buf = Buffer.allocUnsafe(PAGE_SIZE);
-    buf.writeUInt8(1, 0); // isLeaf = 1
-    buf.writeUInt16LE(keys.length, 1);
-    buf.writeUInt32LE(nextLeaf, 3); // 4 bytes for next leaf pointer
+  _spliceUint(array, index, deleteCount, ...items){
+    const before = array.slice(0, index);
+    const after = array.slice(index + deleteCount);
+    const insert = Uint32Array.from(items);
 
-    for (let i = 0; i < keys.length; i++) {
-      buf.writeUInt32LE(keys[i], 7 + i * 4);
-      buf.writeUInt32LE(values[i], 7 + MAX_KEYS * 4 + i * 4);
-    }
-    return buf;
+    const result = new Uint32Array(before.length + insert.length + after.length);
+    result.set(before, 0);
+    result.set(insert, before.length);
+    result.set(after, before.length + insert.length);
+
+    return result;
+  }
+
+  _encodeLeaf(keys, values, nextLeaf = 0, numKeys) {
+    const leaf = new Uint32Array(PAGE_SIZE / 4);
+
+    leaf[0] = 1;                // isLeaf (equivalente ao buf.writeUInt8)
+    leaf[1] = numKeys;      // key count (equivalente ao buf.writeUInt16LE)
+    leaf[3] = nextLeaf;         // skip [2] to preserve offset = 3
+
+    const valuesOffset = 4;
+    const keysOffset = valuesOffset + MAX_KEYS;
+
+    leaf.set(values, valuesOffset)
+    leaf.set(keys, keysOffset)
+
+    return Buffer.from(leaf.buffer, 0, PAGE_SIZE);
   }
 
   _decodeLeaf(buffer) {
-    const numKeys = buffer.readUInt16LE(1);
-    const nextLeaf = buffer.readUInt32LE(3);
-    const keys = [];
-    const values = [];
-    for (let i = 0; i < numKeys; i++) {
-      keys.push(buffer.readUInt32LE(7 + i * 4));
-      values.push(buffer.readUInt32LE(7 + MAX_KEYS * 4 + i * 4));
-    }
-    return { keys, values, nextLeaf };
-  }
+    const view = new Uint32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / 4);
 
-  _encodeInternal(keys, children) {
-    const buf = Buffer.allocUnsafe(PAGE_SIZE);
-    buf.writeUInt8(0, 0); // isLeaf = 0
-    buf.writeUInt16LE(keys.length, 1);
-    for (let i = 0; i < keys.length; i++) {
-      buf.writeUInt32LE(keys[i], 3 + i * 4);
-    }
-    for (let i = 0; i < children.length; i++) {
-      buf.writeUInt32LE(children[i], 3 + MAX_KEYS * 4 + i * 4);
-    }
-    return buf;
+    const numKeys = view[1];
+    const nextLeaf = view[3];
+
+    const valuesOffset = 4;
+    const keysOffset = valuesOffset + MAX_KEYS;
+
+    const keys = view.subarray(keysOffset, numKeys);
+    const values = view.subarray(valuesOffset, numKeys);
+
+    return { keys, values, nextLeaf, numKeys };
   }
 
   _decodeInternal(buffer) {
-    const numKeys = buffer.readUInt16LE(1);
-    const keys = [];
-    const children = [];
-    for (let i = 0; i < numKeys; i++) {
-      keys.push(buffer.readUInt32LE(3 + i * 4));
-    }
-    for (let i = 0; i < numKeys + 1; i++) {
-      children.push(buffer.readUInt32LE(3 + MAX_KEYS * 4 + i * 4));
-    }
-    return { keys, children };
+    const internal = new Uint32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / 4);
+    const numKeys = internal[1];
+
+    const keysOffset = 3;
+    const childrenOffset = keysOffset + MAX_KEYS;
+
+    const keys = internal.subarray(keysOffset, keysOffset + numKeys);
+    const children = internal.subarray(childrenOffset, childrenOffset + numKeys + 1);
+
+    return { keys, children, numKeys };
+  }
+
+  _encodeInternal(keys, children, numKeys) {
+    const internalNode = new Uint32Array(PAGE_SIZE / 4);
+    internalNode[0] = 0;
+    internalNode[1] = numKeys;
+    const keysOffset = 3; //might be 3?
+    const childrenOffset = keysOffset + MAX_KEYS;
+
+    internalNode.set(keys, keysOffset)
+    internalNode.set(children, childrenOffset)
+
+    return Buffer.from(internalNode.buffer, 0, PAGE_SIZE);
   }
 
   insert(key, value) {
@@ -138,7 +157,7 @@ export class DiskBPlusTree {
     if (result) {
       const { promotedKey, left, right } = result;
       const newRootId = this._allocatePage();
-      const rootBuf = this._encodeInternal([promotedKey], [left, right]);
+      const rootBuf = this._encodeInternal([promotedKey], [left, right], 1);
       this._writePage(newRootId, rootBuf);
       this.rootPage = newRootId;
       this._updateHeader();
@@ -153,26 +172,27 @@ export class DiskBPlusTree {
     const isLeaf = buffer.readUInt8(0);
 
     if (isLeaf) {
-      let { keys, values, nextLeaf } = this._decodeLeaf(buffer);
-      let idx = keys.findIndex(k => key < k);
-      if (idx === -1) idx = keys.length;
-      keys.splice(idx, 0, key);
-      values.splice(idx, 0, value);
+      let { keys, values, nextLeaf, numKeys } = this._decodeLeaf(buffer);
+      let idx = this._binarySearch(keys, key, numKeys);
+      if (idx === -1) idx = numKeys;
+      keys = this._spliceUint(keys, idx, 0, key)
+      values = this._spliceUint(values, idx, 0, value);
+      numKeys++;
 
-      if (keys.length <= MAX_KEYS) {
-        const buf = this._encodeLeaf(keys, values, nextLeaf);
+      if (numKeys <= MAX_KEYS) {
+        const buf = this._encodeLeaf(keys, values, nextLeaf, numKeys);
         this._writePage(pageId, buf);
         return null;
       } else {
-        const mid = Math.floor(keys.length / 2);
+        const mid = Math.floor(numKeys / 2);
         const leftKeys = keys.slice(0, mid);
         const leftValues = values.slice(0, mid);
         const rightKeys = keys.slice(mid);
         const rightValues = values.slice(mid);
 
         const rightPageId = this._allocatePage();
-        const rightBuf = this._encodeLeaf(rightKeys, rightValues, nextLeaf);
-        const leftBuf = this._encodeLeaf(leftKeys, leftValues, rightPageId);
+        const rightBuf = this._encodeLeaf(rightKeys, rightValues, nextLeaf, mid);
+        const leftBuf = this._encodeLeaf(leftKeys, leftValues, rightPageId, mid);
 
         this._writePage(pageId, leftBuf);
         this._writePage(rightPageId, rightBuf);
@@ -184,24 +204,24 @@ export class DiskBPlusTree {
         };
       }
     } else {
-      const { keys: nodeKeys, children } = this._decodeInternal(buffer);
-      let i = 0;
-      while (i < nodeKeys.length && key >= nodeKeys[i]) i++;
+      let { keys: nodeKeys, children, numKeys } = this._decodeInternal(buffer);
+      let i = this._binarySearch(nodeKeys, key, numKeys);
       const childPage = children[i];
 
       const result = this._insertRecursive(childPage, key, value);
       if (!result) return null;
 
       const { promotedKey, right } = result;
-      nodeKeys.splice(i, 0, promotedKey);
-      children.splice(i + 1, 0, right);
+      nodeKeys = this._spliceUint(nodeKeys, i, 0, promotedKey);
+      children = this._spliceUint(children, i+1, 0, right);
+      numKeys++;
 
-      if (nodeKeys.length <= MAX_KEYS) {
-        const buf = this._encodeInternal(nodeKeys, children);
+      if (numKeys <= MAX_KEYS) {
+        const buf = this._encodeInternal(nodeKeys, children, numKeys);
         this._writePage(pageId, buf);
         return null;
       } else {
-        const mid = Math.floor(nodeKeys.length / 2);
+        const mid = Math.floor(numKeys / 2);
         const leftKeys = nodeKeys.slice(0, mid);
         const rightKeys = nodeKeys.slice(mid + 1);
         const promoted = nodeKeys[mid];
@@ -210,8 +230,8 @@ export class DiskBPlusTree {
         const rightChildren = children.slice(mid + 1);
 
         const rightPageId = this._allocatePage();
-        const rightBuf = this._encodeInternal(rightKeys, rightChildren);
-        const leftBuf = this._encodeInternal(leftKeys, leftChildren);
+        const rightBuf = this._encodeInternal(rightKeys, rightChildren, mid);
+        const leftBuf = this._encodeInternal(leftKeys, leftChildren, mid);
 
         this._writePage(pageId, leftBuf);
         this._writePage(rightPageId, rightBuf);
@@ -232,19 +252,28 @@ export class DiskBPlusTree {
       const isLeaf = buffer.readUInt8(0);
 
       if (isLeaf) {
-        const { keys, values } = this._decodeLeaf(buffer);
-        const idx = keys.indexOf(key);
+        const { keys, values, numKeys } = this._decodeLeaf(buffer);
+        const idx = this._binarySearch(keys, key, numKeys);
         return idx !== -1 ? values[idx] : null;
       }
 
-      const { keys, children } = this._decodeInternal(buffer);
-      let i = 0;
-      while (i < keys.length && key >= keys[i]) i++;
+      const { keys, children, numKeys } = this._decodeInternal(buffer);
+      let i = this._binarySearch(keys, key, numKeys);
       pageId = children[i];
     }
   }
 
   close() {
     fs.closeSync(this.fd);
+  }
+
+  _binarySearch(arr, key, len) {
+    let lo = 0, hi = len;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (arr[mid] < key) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
   }
 }

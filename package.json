@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test",
+    "benchmark": "time node btree/profile.js",
+    "profile": "node --prof btree/profile.js; node --prof-process *.log > profiler; rm *.log"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +14,8 @@
   "description": "",
   "devDependencies": {
     "@types/node": "^22.15.30"
+  },
+  "dependencies": {
+    "cpulimit": "^1.1.4"
   }
 }

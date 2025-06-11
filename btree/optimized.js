@@ -133,23 +133,16 @@ export class DiskBPlusTree {
     const keysOffset = 3;
     const childrenOffset = keysOffset + MAX_KEYS;
 
-    const keys = new Array(numKeys);
-    const children = new Array(numKeys + 1);
+    const keys = internal.subarray(keysOffset, keysOffset + numKeys);
+    const children = internal.subarray(childrenOffset, childrenOffset + numKeys + 1);
 
-    for (let i = 0; i < numKeys; i++) {
-      keys[i] = internal[keysOffset + i];
-      children[i] = internal[childrenOffset + i];
-    }
-
-    children[numKeys] = internal[childrenOffset + numKeys];
-
-    return { keys, children };
+    return { keys, children, numKeys };
   }
 
-  _encodeInternal(keys, children) {
+  _encodeInternal(keys, children, numKeys) {
     const internalNode = new Uint32Array(PAGE_SIZE / 4);
     internalNode[0] = 0;
-    internalNode[1] = keys.length;
+    internalNode[1] = numKeys;
     const keysOffset = 3; //might be 3?
     const childrenOffset = keysOffset + MAX_KEYS;
 
@@ -164,7 +157,7 @@ export class DiskBPlusTree {
     if (result) {
       const { promotedKey, left, right } = result;
       const newRootId = this._allocatePage();
-      const rootBuf = this._encodeInternal([promotedKey], [left, right]);
+      const rootBuf = this._encodeInternal([promotedKey], [left, right], 1);
       this._writePage(newRootId, rootBuf);
       this.rootPage = newRootId;
       this._updateHeader();
@@ -211,23 +204,24 @@ export class DiskBPlusTree {
         };
       }
     } else {
-      const { keys: nodeKeys, children } = this._decodeInternal(buffer);
-      let i = this._binarySearch(nodeKeys, key, nodeKeys.length);
+      let { keys: nodeKeys, children, numKeys } = this._decodeInternal(buffer);
+      let i = this._binarySearch(nodeKeys, key, numKeys);
       const childPage = children[i];
 
       const result = this._insertRecursive(childPage, key, value);
       if (!result) return null;
 
       const { promotedKey, right } = result;
-      nodeKeys.splice(i, 0, promotedKey);
-      children.splice(i + 1, 0, right);
+      nodeKeys = this._spliceUint(nodeKeys, i, 0, promotedKey);
+      children = this._spliceUint(children, i+1, 0, right);
+      numKeys++;
 
-      if (nodeKeys.length <= MAX_KEYS) {
-        const buf = this._encodeInternal(nodeKeys, children);
+      if (numKeys <= MAX_KEYS) {
+        const buf = this._encodeInternal(nodeKeys, children, numKeys);
         this._writePage(pageId, buf);
         return null;
       } else {
-        const mid = Math.floor(nodeKeys.length / 2);
+        const mid = Math.floor(numKeys / 2);
         const leftKeys = nodeKeys.slice(0, mid);
         const rightKeys = nodeKeys.slice(mid + 1);
         const promoted = nodeKeys[mid];
@@ -236,8 +230,8 @@ export class DiskBPlusTree {
         const rightChildren = children.slice(mid + 1);
 
         const rightPageId = this._allocatePage();
-        const rightBuf = this._encodeInternal(rightKeys, rightChildren);
-        const leftBuf = this._encodeInternal(leftKeys, leftChildren);
+        const rightBuf = this._encodeInternal(rightKeys, rightChildren, mid);
+        const leftBuf = this._encodeInternal(leftKeys, leftChildren, mid);
 
         this._writePage(pageId, leftBuf);
         this._writePage(rightPageId, rightBuf);
@@ -263,8 +257,8 @@ export class DiskBPlusTree {
         return idx !== -1 ? values[idx] : null;
       }
 
-      const { keys, children } = this._decodeInternal(buffer);
-      let i = this._binarySearch(keys, key, keys.length);
+      const { keys, children, numKeys } = this._decodeInternal(buffer);
+      let i = this._binarySearch(keys, key, numKeys);
       pageId = children[i];
     }
   }

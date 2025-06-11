@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test",
-    "benchmark": "time node btree/profile.js"
+    "benchmark": "time node btree/profile.js",
+    "profile": "node --prof btree/profile.js; node --prof-process *.log > profiler; rm *.log"
   },
   "keywords": [],
   "author": "",
